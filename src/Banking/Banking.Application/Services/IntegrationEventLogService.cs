@@ -44,8 +44,8 @@ namespace Banking.Application.Services
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
 
             var eventLogEntry = new IntegrationEventLog(@event, transaction.TransactionId);
-
-            _bankingDbContext.Database.UseTransaction(transaction.GetDbTransaction());
+            //if log DbContext is different from the main, pass the current tranmsaction to its DbContext
+            //_bankingDbContext.Database.UseTransaction(transaction.GetDbTransaction());
             _bankingDbContext.IntegrationEventLogs.Add(eventLogEntry);
 
             return _bankingDbContext.SaveChangesAsync();
