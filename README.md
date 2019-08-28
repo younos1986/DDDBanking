@@ -76,6 +76,18 @@ reference: https://docs.microsoft.com/en-us/dotnet/architecture/microservices/mi
 * Value Objects: Amount.
 * Use Cases: Add, Deposit, Withdraw, Close, Get Account Status.
 
+
+### Features
+*   DDD
+*   CQRS
+*   BackgroundTasks
+*   APPIGateWay
+*   NServiceBus using SQL Server Persistence
+*   Dockerized
+*   Unit-Test
+*   Functional-Test
+*   EF-Core2.2
+
 # AccountController.cs
 
 ```
