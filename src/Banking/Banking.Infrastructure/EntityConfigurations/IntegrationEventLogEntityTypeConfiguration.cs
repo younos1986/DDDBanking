@@ -13,9 +13,9 @@ namespace Banking.Infrastructure.EntityConfigurations
 
             builder.ToTable("IntegrationEventLogs");
 
-            builder.HasKey(e => e.EventId);
+            builder.HasKey(e => e.MessageId);
 
-            builder.Property(e => e.EventId)
+            builder.Property(e => e.MessageId)
                 .IsRequired();
 
             builder.Property(e => e.Content)

@@ -9,19 +9,20 @@ namespace Banking.Domain.IntegrationEvents
 {
     public class IntegrationEventLog
     {
-        private IntegrationEventLog() { }
+        public IntegrationEventLog() { }
         public IntegrationEventLog(IntegrationEvent @event, Guid transactionId)
         {
-            EventId = @event.Id;
+            MessageId = @event.MessageId;
             CreationTime = @event.CreationDate;
             EventTypeName = @event.GetType().FullName;
             Content = JsonConvert.SerializeObject(@event);
-            State = EventStateEnum.NotPublished;
+            State = EventStateEnum.None;
             TimesSent = 0;
             TransactionId = transactionId.ToString();
         }
 
-        public Guid EventId { get; private set; }
+        //NServiceBus Message Id
+        public Guid MessageId { get; private set; }
         public string EventTypeName { get; private set; }
         [NotMapped]
         public string EventTypeShortName => EventTypeName.Split('.')?.Last();
@@ -33,10 +34,11 @@ namespace Banking.Domain.IntegrationEvents
         public string Content { get; private set; }
         public string TransactionId { get; private set; }
 
-        public IntegrationEventLog DeserializeJsonContent(Type type)
+        
+
+        public object DeserializeJsonContent(Type type)
         {
-            IntegrationEvent = JsonConvert.DeserializeObject(Content, type) as IntegrationEvent;
-            return this;
+            return JsonConvert.DeserializeObject(Content, type);
         }
     }
 }

@@ -2,9 +2,10 @@ namespace Banking.Domain.IntegrationEvents
 {
     public enum EventStateEnum
     {
-        NotPublished = 0,
-        InProgress = 1,
-        Published = 2,
-        PublishedFailed = 3
+        None = 0,
+        ReadyToPublish = 1,
+        InProgress = 2,
+        Published = 3,
+        PublishedFailed = 4
     }
 }

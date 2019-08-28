@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Banking.Domain.IntegrationEvents;
 using Banking.Domain.SeedWorks;
 using Banking.Infrastructure.DbContexts;
+using Banking.Infrastructure.Extensions;
+using Banking.Infrastructure.NServiceBusConfiguration;
 using Banking.Infrastructure.Repositories;
 using Banking.IntegrationEvents;
 using Microsoft.EntityFrameworkCore;
@@ -18,14 +20,14 @@ namespace Banking.Application.Services
 
         private readonly List<Type> _eventTypes;
         readonly BankingDbContext _bankingDbContext;
-        //private readonly IEndpointInstance _eventBus;
+        private readonly IServiceBusEndpoint _endpoint;
         public IntegrationEventLogService(
             BankingDbContext bankingDbContext
-            //, IEndpointInstance eventBus
+            ,IServiceBusEndpoint endpoint
             )
         {
             _bankingDbContext=bankingDbContext;
-            //_eventBus = eventBus;
+            _endpoint = endpoint;
         }
 
         public async Task<IEnumerable<IntegrationEventLog>> RetrieveEventLogsPendingToPublishAsync(Guid transactionId)
@@ -33,9 +35,9 @@ namespace Banking.Application.Services
             var tid = transactionId.ToString();
 
             return await _bankingDbContext.IntegrationEventLogs
-                .Where(e => e.TransactionId == tid && e.State == EventStateEnum.NotPublished)
+                .Where(e => e.TransactionId == tid && e.State == EventStateEnum.ReadyToPublish)
                 .OrderBy(o => o.CreationTime)
-                .Select(e => e.DeserializeJsonContent(_eventTypes.Find(t => t.Name == e.EventTypeShortName)))
+                //.Select(e => e.DeserializeJsonContent(_eventTypes.Find(t => t.Name == e.EventTypeShortName)))
                 .ToListAsync();
         }
 
@@ -47,7 +49,6 @@ namespace Banking.Application.Services
             //if log DbContext is different from the main, pass the current tranmsaction to its DbContext
             //_bankingDbContext.Database.UseTransaction(transaction.GetDbTransaction());
             _bankingDbContext.IntegrationEventLogs.Add(eventLogEntry);
-
             return _bankingDbContext.SaveChangesAsync();
         }
         public Task MarkEventAsPublishedAsync(Guid eventId)
@@ -67,7 +68,7 @@ namespace Banking.Application.Services
 
         private Task UpdateEventStatus(Guid eventId, EventStateEnum status)
         {
-            var eventLogEntry = _bankingDbContext.IntegrationEventLogs.Single(ie => ie.EventId == eventId);
+            var eventLogEntry = _bankingDbContext.IntegrationEventLogs.Single(ie => ie.MessageId == eventId);
             eventLogEntry.State = status;
 
             if (status == EventStateEnum.InProgress)
@@ -90,15 +91,20 @@ namespace Banking.Application.Services
 
                 try
                 {
-                    await MarkEventAsInProgressAsync(logEvt.EventId);
-                    //await _eventBus.Publish(logEvt.IntegrationEvent);
-                    await MarkEventAsPublishedAsync(logEvt.EventId);
+
+                    await MarkEventAsInProgressAsync(logEvt.MessageId);
+
+                    var deserializedObject = logEvt.Content.DeserializeJson();
+                    await _endpoint.Publish(deserializedObject, logEvt.MessageId);
+
+                    await MarkEventAsPublishedAsync(logEvt.MessageId);
+
                 }
                 catch (Exception ex)
                 {
                     //_logger.LogError(ex, "ERROR publishing integration event: {IntegrationEventId} from {AppName}", logEvt.EventId, Program.AppName);
 
-                    await MarkEventAsFailedAsync(logEvt.EventId);
+                    await MarkEventAsFailedAsync(logEvt.MessageId);
                 }
             }
         }

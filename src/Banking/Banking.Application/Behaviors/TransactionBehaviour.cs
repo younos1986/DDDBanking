@@ -4,9 +4,11 @@ using System.Threading.Tasks;
 using Banking.Application.Services;
 using Banking.Infrastructure.DbContexts;
 using Banking.Infrastructure.Extensions;
+using Banking.Infrastructure.NServiceBusConfiguration;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NServiceBus;
 
 namespace Banking.Application.Behaviors
 {
@@ -15,11 +17,11 @@ namespace Banking.Application.Behaviors
         private readonly ILogger<TransactionBehaviour<TRequest, TResponse>> _logger;
         private readonly BankingDbContext _dbContext;
         private readonly IIntegrationEventLogService _integrationEventLogService;
-        //private readonly IEndpointInstance _endpoint;
+        private readonly IServiceBusEndpoint _endpoint;
         public TransactionBehaviour(BankingDbContext dbContext,
             IIntegrationEventLogService integrationEventLogService,
             ILogger<TransactionBehaviour<TRequest, TResponse>> logger
-            //,IEndpointInstance _endpoint
+            ,IServiceBusEndpoint endpoint
             )
         {
             _dbContext = dbContext ?? throw new ArgumentException(nameof(BankingDbContext));
@@ -27,7 +29,7 @@ namespace Banking.Application.Behaviors
             _integrationEventLogService = integrationEventLogService;
             _logger = logger ?? throw new ArgumentException(nameof(ILogger));
 
-            //_endpoint = endpoint;
+            _endpoint = endpoint;
         }
 
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
@@ -65,7 +67,7 @@ namespace Banking.Application.Behaviors
                         transactionId = transaction.TransactionId;
                     }
 
-                    //await _integrationEventLogService.PublishEventsThroughEventBusAsync(transactionId);
+                    await _integrationEventLogService.PublishEventsThroughEventBusAsync(transactionId);
                 });
 
                 return response;

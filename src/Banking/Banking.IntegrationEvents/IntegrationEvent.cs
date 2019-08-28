@@ -7,19 +7,19 @@ namespace Banking.IntegrationEvents
     {
         public IntegrationEvent()
         {
-            Id = Guid.NewGuid();
+            MessageId = Guid.NewGuid();
             CreationDate = DateTime.UtcNow;
         }
 
         [JsonConstructor]
-        public IntegrationEvent(Guid id, DateTime createDate)
+        public IntegrationEvent(Guid messageId, DateTime createDate)
         {
-            Id = id;
+            MessageId = messageId;
             CreationDate = createDate;
         }
 
         [JsonProperty]
-        public Guid Id { get; private set; }
+        public Guid MessageId { get; private set; }
 
         [JsonProperty]
         public DateTime CreationDate { get; private set; }

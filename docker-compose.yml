@@ -2,14 +2,16 @@ version: '3.4'
 
 services:
   banking.api:
-    image: ${DOCKER_REGISTRY}bankingapi:${TAG:-latest}
+    image: ${DOCKER_REGISTRY}bankingapi22:${TAG:-latest}
     build:
+      target: debug
       context: .
       dockerfile: src/Banking/Banking.Api/Dockerfile
 
 
   selfservice.api:
-    image: ${DOCKER_REGISTRY}selfserviceapi:${TAG:-latest}
+    image: ${DOCKER_REGISTRY}selfserviceapi22:${TAG:-latest}
     build:
+      target: debug
       context: .
       dockerfile: src/SelfService/SelfService.Api/Dockerfile
