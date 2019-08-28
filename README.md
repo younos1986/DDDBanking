@@ -1,4 +1,6 @@
-# DDDBanking
+# DDDBanking 
+
+    My knowledge about DDD
 
 # domain-driven-design
 
