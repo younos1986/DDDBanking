@@ -44,15 +44,15 @@ namespace CoreOcelotApiGateway
             services.AddScoped<CustomCoreOcelotAuthorizer, CustomCoreOcelotAuthorizer>();
             services.AddCoreOcelot(config =>
             {
-                config.EnableAutorization = true;
+                config.EnableAutorization = false;
                 config.CoreOcelotAuthorizer = new CustomCoreOcelotAuthorizer(
                     Configuration,
                     services.BuildServiceProvider().GetService<IMemoryCache>()
                     );
 
                 // in case to disable IPRateLimiting - no configuraion part as "IPRateLimitingSetting" is needed 
-                // config.IPRateLimitingSetting = new IPRateLimitingSetting() { EnableEndpointRateLimiting = false };
-                config.IPRateLimitingSetting = Configuration.GetSection("IPRateLimitingSetting").Get<IPRateLimitingSetting>();
+                config.IPRateLimitingSetting = new IPRateLimitingSetting() { EnableEndpointRateLimiting = false };
+                //config.IPRateLimitingSetting = Configuration.GetSection("IPRateLimitingSetting").Get<IPRateLimitingSetting>();
 
             });
 
@@ -88,7 +88,10 @@ namespace CoreOcelotApiGateway
         {
             List<string> ignoreList = new List<string>()
             {
+                "/robots.txt",
+                "/favicon.ico",
                 "/api/CustomValues",
+                "/api/UserAccess"
             };
 
             //Add the specific route to app.MapWhen To ignore Ocelat route capturing.
